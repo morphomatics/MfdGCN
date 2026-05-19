@@ -50,12 +50,8 @@ def generate_graphs(max_node_num: int,
 
         num_node = jax.random.randint(subkey1, (1,), min_node_num, max_node_num)[0]
         graph = nx.erdos_renyi_graph(num_node, jax.random.uniform(subkey2, (1,), minval=0.01, maxval=1)[0])
-        erdos_renyi_graph = convert_networkx_to_jraph_graph(graph,
-                                                            space=space,
-                                                            features=features,
-                                                            edge_weights=None,
-                                                            global_feature=jnp.array([0], int),
-                                                            dim=max_node_num)
+        erdos_renyi_graph = convert_networkx_to_jraph_graph(graph, space=space, features=features, edge_weights=None,
+                                                            global_feature=jnp.array([0], int), dim=max_node_num)
 
         ### Watts-Strogatz (small world) ###
 
@@ -65,9 +61,7 @@ def generate_graphs(max_node_num: int,
                 num_node = jax.random.randint(subkey1, (1,), min_node_num, max_node_num)[0]
                 graph = nx.watts_strogatz_graph(num_node, np.random.randint(low=1, high=200),
                                                 jax.random.uniform(subkey2, (1,), minval=0.01, maxval=1)[0])
-                small_world_graph = convert_networkx_to_jraph_graph(graph,
-                                                                    space=space,
-                                                                    features=features,
+                small_world_graph = convert_networkx_to_jraph_graph(graph, space=space, features=features,
                                                                     edge_weights=None,
                                                                     global_feature=jnp.array([1], int),
                                                                     dim=max_node_num)
@@ -84,9 +78,7 @@ def generate_graphs(max_node_num: int,
                 num_node = jax.random.randint(subkey1, (1,), min_node_num, max_node_num)[0]
                 graph = nx.barabasi_albert_graph(num_node,
                                                  int(jax.random.randint(subkey2, (1,), minval=1, maxval=200)[0]))
-                barabasi_albert_graph = convert_networkx_to_jraph_graph(graph,
-                                                                        space=space,
-                                                                        features=features,
+                barabasi_albert_graph = convert_networkx_to_jraph_graph(graph, space=space, features=features,
                                                                         edge_weights=None,
                                                                         global_feature=jnp.array([2], int),
                                                                         dim=max_node_num)

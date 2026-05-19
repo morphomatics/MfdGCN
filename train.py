@@ -21,8 +21,7 @@ def weighted_cross_entropy_loss(params: Dict,
                                 label: jnp.ndarray,
                                 network: nn.Module,
                                 mask: jnp.ndarray,
-                                weights: jnp.ndarray | None = None
-                                ) -> jnp.ndarray:
+                                weights: jnp.ndarray | None = None) -> jnp.ndarray:
     """Weighted cross-entropy classification loss
 
     :param params: network parameters
@@ -56,8 +55,7 @@ def confusion_matrix(predictions: jnp.ndarray,
                      results: jnp.ndarray,
                      num_classes: int,
                      labels: jnp.ndarray,
-                     mask: jnp.ndarray
-                     ) -> jnp.ndarray:
+                     mask: jnp.ndarray) -> jnp.ndarray:
     """Encodes true positives (TP), false positives (FP), and false negatives (FN) of a multi-class classification in a
     matrix
 
@@ -122,8 +120,7 @@ def evaluate_f1(params: Dict,
                 labels: jnp.ndarray,
                 num_classes: int,
                 network: nn.Module,
-                mask: jnp.ndarray,
-                ) -> jnp.ndarray:
+                mask: jnp.ndarray) -> jnp.ndarray:
     """Evaluation metric: F1 score for classification
 
     :param params: network parameters
@@ -149,16 +146,14 @@ def evaluate_f1(params: Dict,
     return f1_macro(C)
 
 
-@partial(jax.jit, static_argnames=['optimizer', 'network', 'verbosity'])
+@partial(jax.jit, static_argnames=['optimizer', 'network'])
 def update(state: TrainingState,
            graph: jraph.GraphsTuple,
            label: jnp.ndarray,
            optimizer: optax.GradientTransformation,
            network: nn.Module,
            mask: jnp.ndarray,
-           weights: jnp.ndarray | None = None,
-           verbosity: int = 0
-           ) -> TrainingState:
+           weights: jnp.ndarray | None = None) -> TrainingState:
     """Learning rule (stochastic gradient descent)
 
     :param state: current training state
@@ -168,16 +163,10 @@ def update(state: TrainingState,
     :param network: graph neural network
     :param mask: binary mask to mask dummy graphs from batching (use jraph's get_graph_padding_mask if applicable)
     :param weights: class weights (all one by default)
-    :param verbosity: verbosity level between 0 and 2
     :return: updated training state
     """
     value, grads = jax.value_and_grad(weighted_cross_entropy_loss)(state.params, graph, label, network, mask, weights)
     updates, opt_state = optimizer.update(grads, state.opt_state, state.params)
-
-    if verbosity > 0:
-        jax.debug.print('value: {}', value)
-    if verbosity > 1:
-        jax.debug.print("||grads_i||_inf: {}", jax.tree_util.tree_map(lambda a: jnp.max(jnp.abs(a)), grads))
 
     params = optax.apply_updates(state.params, updates)
     # Compute avg_params, the exponential moving average of the "live" params.

@@ -2,15 +2,7 @@ import jax
 import jax.numpy as jnp
 import jraph
 import numpy as np
-try:
-    import networkx as nx
-except:
-    class nx: pass
-    nx.Graph = None
-    print('failed loading networkx')
-from morphomatics.geom import BezierSpline
-
-from morphomatics.manifold import Sphere
+import networkx as nx
 
 
 def compute_node_degrees(n_nodes, senders):
@@ -48,44 +40,24 @@ def spd_one_hot(n_nodes: int) -> np.ndarray:
     return P
 
 
-def spd_degree(n_nodes: int, dim: int, degrees: jnp.ndarray) -> np.ndarray:
-    if dim < jnp.max(degrees):
-        print("Warning: The outer dimension is smaller than the maximal degree. "
-              "All nodes with a larger degree than the outer dimension are mapped to the pole.")
-
-    d = np.ceil(-1 / 2 + np.sqrt(1 + 8 * n_nodes) / 2).astype(int)
-    ind_utr = np.triu_indices(d)
-
-    P = jnp.zeros((n_nodes, d, d))
-    for i in range(n_nodes):
-        j = degrees[i]
-        if ind_utr[0][j] == ind_utr[1][j]:
-            P = P.at[i, ind_utr[0][j], ind_utr[0][j]].set(1)
-        else:
-            P = P.at[i, ind_utr[0][j], ind_utr[1][j]].set(1)
-            P = P.at[i, ind_utr[1][j], ind_utr[0][j]].set(1)
-
-    return P
-
-
-def convert_networkx_to_jraph_graph(nxgraph: nx.Graph,
+def convert_networkx_to_jraph_graph(nx_graph: nx.Graph,
                                     space: str,
                                     features: str,
                                     edge_weights: jnp.ndarray | None,
                                     global_feature: jnp.ndarray | None = None,
                                     dim: int | None = None) -> jraph.GraphsTuple:
 
-    assert space == "hyperbolic" or space == "sphere" or space == "spd" or space == "euclidean"
+    assert space == "hyperbolic" or space == "spd"
     assert features == "one_hot" or features == "degree"
 
-    e = jnp.array(nxgraph.edges)
+    e = jnp.array(nx_graph.edges)
 
     senders = e.ravel()
     receivers = e[:, ::-1].ravel()
 
-    n_nodes = nxgraph.number_of_nodes()
+    n_nodes = nx_graph.number_of_nodes()
 
-    if space == "hyperbolic" or space == "sphere":
+    if space == "hyperbolic":
         if features == "degree":
             degrees = compute_node_degrees(n_nodes, senders)
 
@@ -97,30 +69,25 @@ def convert_networkx_to_jraph_graph(nxgraph: nx.Graph,
             f = jax.nn.one_hot(degrees, dim)
         else:  # features == "one_hot"
             f = jnp.eye(n_nodes + 1)[:n_nodes]
-    elif space == "euclidean":
-        if features == "degree":
-            raise NotImplementedError('This function has not been implemented yet.')
-        else:  # features == "one_hot"
-            f = jnp.eye(n_nodes)
     else:  # if space == "spd"
         if features == "degree":
-            degrees = compute_node_degrees(n_nodes, senders)
+            raise NotImplementedError('Degree representation for the SPD manifold has not been implemented yet.')
 
         else:  # features == "one_hot"
             f = spd_one_hot(n_nodes)
 
     if edge_weights is None:
-        edge_weights = jnp.ones_like(senders)[:, None] / nxgraph.number_of_nodes()
+        edge_weights = jnp.ones_like(senders)[:, None] / nx_graph.number_of_nodes()
     else:
-        assert len(edge_weights) == len(nxgraph.edges)
+        assert len(edge_weights) == len(nx_graph.edges)
 
     jgraph = jraph.GraphsTuple(
         nodes=f,
         edges=edge_weights,
         senders=senders,
         receivers=receivers,
-        n_node=jnp.array([nxgraph.number_of_nodes()]),
-        n_edge=jnp.array([2*nxgraph.number_of_edges()]),
+        n_node=jnp.array([nx_graph.number_of_nodes()]),
+        n_edge=jnp.array([2 * nx_graph.number_of_edges()]),
         globals=global_feature
     )
 
