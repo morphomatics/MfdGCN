@@ -270,9 +270,11 @@ if __name__ == '__main__':
     # case == "flow": use FlowNet
     # case == "gcn": use GCNNet
 
+    net_str = "FlowNet" if case == "flow" else "GCNNet"
+    print(f"Running {net_str} on ADNI data with 100 random seeds...")
     results = []
     for s in range(100):
-        results.append(main(case, s, True))
+        results.append(main(case, s))
         print({f"Seed {s}": f"{results[-1]}"})
         print(f"Running average: {np.mean(np.array(results))}")
 
