@@ -6,8 +6,8 @@ dependencies:
   - python=3.11
   - pip
   - pip:
-    - morphomatics==4.1.2
     - "jax[cuda12]"
+    - morphomatics==4.1.2
     - numpy
     - flax
     - optax

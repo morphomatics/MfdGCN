@@ -23,7 +23,7 @@ from util import spd_one_hot
 from train import update, evaluate_f1, TrainingState
 
 NUM_CLASSES = 3
-NUM_NODES = 100
+NUM_NODES = 50
 
 
 def batch_iterate(data: List[jraph.GraphsTuple],
@@ -163,7 +163,7 @@ class FlowNetwork(nn.Module):
 
         z = G.nodes
 
-        if self.feature_initialization == "degree" and (isinstance(self.M, HyperbolicSpace) or isinstance(self.M, Sphere)):
+        if self.feature_initialization == "degree" and isinstance(self.M, HyperbolicSpace):
             to_tan = nn.Dense(NUM_NODES, use_bias=False)
             z = jax.vmap(to_tan)(z)
 
@@ -173,8 +173,6 @@ class FlowNetwork(nn.Module):
         if isinstance(self.M, SPD):
             # smallest integer d such that num_nodes <= dim(SPD(d))
             p = jnp.eye(self.M._d)
-        elif isinstance(self.M, Euclidean):
-            p = jnp.zeros((NUM_NODES,))
         else:
             p = jax.nn.one_hot(NUM_NODES, NUM_NODES + 1)
 
