@@ -12,4 +12,6 @@ dependencies:
     - flax
     - optax
     - jraph
+    - pyvista
     - networkx
+    - sckit-learn

@@ -12,18 +12,18 @@ import numpy as np
 import flax.linen as nn
 import optax
 
-from morphomatics.manifold import HyperbolicSpace, Sphere, SPD, Euclidean
+from morphomatics.manifold import HyperbolicSpace, SPD
 from morphomatics.nn.flow_layers import FlowLayer, MfdGcnBlock
 from morphomatics.nn.wFM_layers import MfdInvariant
 from morphomatics.nn.euclidean_layers import MLP
 from morphomatics.graph.operators import max_pooling, mean_pooling
 
-from data.synthetic_graphs.generate_graphs_morphomatics import generate_graphs, pickle_load
+from data.synthetic_graphs.generate_graphs_morphomatics import generate_graphs
 from util import spd_one_hot
 from train import update, evaluate_f1, TrainingState
 
 NUM_CLASSES = 3
-NUM_NODES = 50
+NUM_NODES = 100
 
 
 def batch_iterate(data: List[jraph.GraphsTuple],
@@ -44,11 +44,7 @@ def generate_data(graph_num: int,
 
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
-        if graph_num == 2000:
-            # compare all methods on the same data set (and split)
-            data = pickle_load('../data/synthetic_graphs/synthetic_data_random.pkl')
-        else:
-            data = generate_graphs(NUM_NODES, NUM_NODES, graph_num, key, feature_space, feature_initialization)
+        data = generate_graphs(NUM_NODES, NUM_NODES, graph_num, key, feature_space, feature_initialization)
 
         if feature_space == "spd":
             f = spd_one_hot(NUM_NODES)
