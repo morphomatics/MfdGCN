@@ -170,7 +170,7 @@ def training(hippocampi: List[Hippocampus],
              batch_size: int,
              n_epochs: int,
              seed: int,
-             verbosity: int = 1) -> jnp.ndarray:
+             verbosity: int = 0) -> jnp.ndarray:
     """Train and trest procedure. Splits the ADNI data into training validation, and test sets. The validation set is
     used to select the best model while avoiding overfitting the data. The performance of the selected model on the test
     data is returned.
@@ -181,7 +181,7 @@ def training(hippocampi: List[Hippocampus],
     :param batch_size: Batch size
     :param n_epochs: Number of epochs
     :param seed: Random seed
-    :param verbosity: 0, 1, or 2 verbosity level
+    :param verbosity: 0, 1 verbosity level
     :return: accuracy on test data
     """
 
@@ -201,7 +201,7 @@ def training(hippocampi: List[Hippocampus],
     params = network.init(key, next(batch_iterate(hippocampi, batch_size)))
     if verbosity >= 1:
         flat_para, _ = jax.flatten_util.ravel_pytree(params)
-        print(f"Number of network parameters: {len(flat_para)}")
+        print(f"\nNumber of network parameters: {len(flat_para)}")
 
     # initialize optimizer state
     opt_state = optimizer.init(params)
@@ -249,7 +249,7 @@ def main(case: str, seed: int):
         schedule = optax.exponential_decay(learning_rate, transition_steps, decay_rate, transition_begin)
         optimizer = optax.adam(learning_rate=schedule)
     elif case == "gcn":
-        network = GcnNet(3, 8)
+        network = GcnNet(3, 16)
 
         optimizer = optax.adam(learning_rate=learning_rate)
 
@@ -271,13 +271,13 @@ if __name__ == '__main__':
     # case == "gcn": use GCNNet
 
     net_str = "FlowNet" if case == "flow" else "GCNNet"
-    print(f"Running {net_str} on ADNI data with 100 random seeds...")
+    print(f"\nRunning {net_str} on ADNI data with 100 random seeds...")
     results = []
     for s in range(100):
         results.append(main(case, s))
-        print({f"Seed {s}": f"{results[-1]}"})
-        print(f"Running average: {np.mean(np.array(results))}")
+        print(f"\nSeed {s}: {results[-1]:.3f}")
+        print(f"Running average: {np.mean(np.array(results)):.3f}")
 
     results = np.array(results)
-    print({"Average accuracy": f"{np.mean(results)}", "Standard deviation": f"{np.std(results):.3f}"})
+    print("\nAverage accuracy {np.mean(results):.3f} Standard deviation {np.std(results):.3f}")
 
