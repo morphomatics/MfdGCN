@@ -1,5 +1,5 @@
 from glob import glob
-from typing import NamedTuple, List, Generator, Dict
+from typing import NamedTuple, List, Generator
 import sys
 
 import numpy as np
@@ -36,14 +36,12 @@ class Hippocampus(NamedTuple):
     W: scipy.sparse.coo_matrix
     y: int
 
-def load_meshes(with_random_reduction: bool = False):
+def load_meshes():
     # read
     hippocampi: List[Hippocampus] = []
     files = glob('./data/adni/**/*obj', recursive=True)
     for f in files:
         obj: pv.PolyData = pv.read(f)
-        if with_random_reduction:
-            obj = obj.decimate(np.random.uniform(0.0, 0.02))
         if obj.volume > MAX_VOLUME:
             globals()['MAX_VOLUME'] = obj.volume
         obj.compute_normals(inplace=True, cell_normals=False)
@@ -172,18 +170,17 @@ def training(hippocampi: List[Hippocampus],
              batch_size: int,
              n_epochs: int,
              seed: int,
-             with_random_reduction: bool,
-             verbosity: int) -> jnp.array:
+             verbosity: int = 1) -> jnp.ndarray:
     """Train and trest procedure. Splits the ADNI data into training validation, and test sets. The validation set is
     used to select the best model while avoiding overfitting the data. The performance of the selected model on the test
     data is returned.
 
+    :param hippocampi: ADNI data
     :param network: network to train
     :param optimizer: optimizer to use
     :param batch_size: Batch size
     :param n_epochs: Number of epochs
     :param seed: Random seed
-    :param with_random_reduction: If True, randomly reduce the number of vertices in the hippocampi.
     :param verbosity: 0, 1, or 2 verbosity level
     :return: accuracy on test data
     """
@@ -197,7 +194,8 @@ def training(hippocampi: List[Hippocampus],
         data_train_full, test_size=0.25, random_state=seed, stratify=[h.y for h in data_train_full])
 
     # evaluate accuracy function
-    eval_ = lambda p, g: evaluate(p, g, g.globals[:, 1], num_classes=NUM_CLASSES, network=network, mask=jnp.ones((1,)))
+    eval_ = lambda p, g: evaluate(p, g, g.globals[:, 1], num_classes=NUM_CLASSES, network=network,
+                                  mask=jnp.ones((1,)))
 
     key = jax.random.key(0)
     params = network.init(key, next(batch_iterate(hippocampi, batch_size)))
@@ -222,11 +220,6 @@ def training(hippocampi: List[Hippocampus],
         validation_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_validation)])
         _test_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_test)])
 
-        if verbosity >= 2:
-            # print validation results
-            print({"epoch": f"{i}", "train_acc": f"{train_acc:.3f}", "validation_acc": f"{validation_acc:.3f}",
-                   "test_acc": f"{_test_acc:.3f}"})
-
         # update optimal parameters (only after epoch 25 to ignore randomly-high validation accuracy early in the training)
         if validation_acc > opt_acc and i > 25:
             opt_param = state.avg_params
@@ -238,11 +231,11 @@ def training(hippocampi: List[Hippocampus],
     return test_acc
 
 
-def main(case: str, seed: int, depth: int = None, width: int = None, with_random_reduction: bool = False, verbosity: int = 1):
+def main(case: str, seed: int):
     batch_size = 1
     learning_rate = 1e-3
 
-    hippocampi = load_meshes(with_random_reduction)
+    hippocampi = load_meshes()
 
     # use a comparable number of parameters
     if case == "flow":
@@ -256,19 +249,16 @@ def main(case: str, seed: int, depth: int = None, width: int = None, with_random
         schedule = optax.exponential_decay(learning_rate, transition_steps, decay_rate, transition_begin)
         optimizer = optax.adam(learning_rate=schedule)
     elif case == "gcn":
-        network = GcnNet(depth, width)
-
-        transition_steps = None
-        decay_rate = None
-        transition_begin = None
+        network = GcnNet(3, 8)
 
         optimizer = optax.adam(learning_rate=learning_rate)
 
-    print(f"learningRate: {learning_rate}, n_layers: {depth}, n_channels_flowLayer: {width}, batch_size: {batch_size},"
-          f" transition_steps: {transition_steps}, decay_rate: {decay_rate}, transition_begin: {transition_begin}")
-
-    acc = training(hippocampi=hippocampi, network=network, optimizer=optimizer, batch_size=batch_size, n_epochs=300, seed=seed,
-                   with_random_reduction=with_random_reduction, verbosity=verbosity)
+    acc = training(hippocampi=hippocampi,
+                   network=network,
+                   optimizer=optimizer,
+                   batch_size=batch_size,
+                   n_epochs=300,
+                   seed=seed)
 
     return acc
 
@@ -280,17 +270,12 @@ if __name__ == '__main__':
     # case == "flow": use FlowNet
     # case == "gcn": use GCNNet
 
-    n_layers = int(sys.argv[2])
-    n_channels = int(sys.argv[3])
-
     results = []
     for s in range(100):
-        results.append(main(case, s, n_layers, n_channels, True))
-        print({f"seed {s}": f"{results[-1]}"})
-        print(f"running average: {np.mean(np.array(results))}")
+        results.append(main(case, s, True))
+        print({f"Seed {s}": f"{results[-1]}"})
+        print(f"Running average: {np.mean(np.array(results))}")
 
     results = np.array(results)
-    print({"average accuracy": f"{np.mean(results)}", "stddev": f"{np.std(results):.3f}"})
+    print({"Average accuracy": f"{np.mean(results)}", "Standard deviation": f"{np.std(results):.3f}"})
 
-    file = "results_adni_graphs.npy"
-    np.save(file, results)
