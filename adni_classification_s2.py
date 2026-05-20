@@ -216,11 +216,10 @@ def training(hippocampi: List[Hippocampus],
             state = update(state, batch, batch.globals[:, 1], optimizer, network, mask)
 
         # evaluate accuracy (no batching/padding -> no masking)
-        train_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_train)])
         validation_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_validation)])
         _test_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_test)])
 
-        # update optimal parameters (only after epoch 25 to ignore randomly-high validation accuracy early in the training)
+        # update optimal parameters (only after epoch 25 to ignore randomly high validation accuracy early in the training)
         if validation_acc > opt_acc and i > 25:
             opt_param = state.avg_params
             # update optimal validation accuracy
@@ -271,7 +270,7 @@ if __name__ == '__main__':
     # case == "gcn": use GCNNet
 
     net_str = "FlowNet" if case == "flow" else "GCNNet"
-    print(f"\nRunning {net_str} on ADNI data with 100 random seeds...")
+    print(f"\nRunning {net_str} on ADNI data using normals with 100 random seeds...")
     results = []
     for s in range(100):
         results.append(main(case, s))
@@ -279,5 +278,5 @@ if __name__ == '__main__':
         print(f"Running average: {np.mean(np.array(results)):.3f}")
 
     results = np.array(results)
-    print("\nAverage accuracy {np.mean(results):.3f} Standard deviation {np.std(results):.3f}")
+    print(f"\nAverage accuracy {np.mean(results):.3f}, Standard deviation {np.std(results):.3f}")
 
