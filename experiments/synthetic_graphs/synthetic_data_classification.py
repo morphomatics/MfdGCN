@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 
+sys.path.insert(0, "../..")
+
 import jax
 import jax.numpy as jnp
 import jraph

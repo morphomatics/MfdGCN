@@ -43,10 +43,10 @@ class Hippocampus(NamedTuple):
 
 def read_data():
     # load differential coordinates
-    coords = np.load('../data/adni/dcm_coords.npz')
+    coords = np.load('../../data/adni/dcm_coords.npz')
 
     hippocampi: List[Hippocampus] = []
-    for f in glob('../data/ADNI/**/*obj', recursive=True):
+    for f in glob('../../data/adni/**/*obj', recursive=True):
         sid = osp.basename(f)[:-4]
         obj = pv.read(f)
         if obj.volume > MAX_VOLUME:
