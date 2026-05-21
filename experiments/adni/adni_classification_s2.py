@@ -39,7 +39,7 @@ class Hippocampus(NamedTuple):
 def load_meshes():
     # read
     hippocampi: List[Hippocampus] = []
-    files = glob('./data/adni/**/*obj', recursive=True)
+    files = glob('../data/adni/**/*obj', recursive=True)
     for f in files:
         obj: pv.PolyData = pv.read(f)
         if obj.volume > MAX_VOLUME:
