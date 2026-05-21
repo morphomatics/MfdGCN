@@ -15,3 +15,7 @@ dependencies:
     - pyvista
     - networkx
     - sckit-learn
+    - diffusion_net
+    - torch
+    - tqdm
+    - potpourri3d

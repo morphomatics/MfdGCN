@@ -1,6 +1,8 @@
 from typing import NamedTuple, List, Generator
 import sys
 
+sys.path.insert(0, "../..")
+
 import numpy as np
 
 from sklearn import model_selection
