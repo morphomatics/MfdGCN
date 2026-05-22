@@ -225,8 +225,6 @@ def training(hippocampi: List[Hippocampus],
 
 
 def main(case: str,
-         batch_size: int,
-         n_epochs: int,
          seed: int):
 
     # hyperparameters
