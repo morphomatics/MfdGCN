@@ -24,7 +24,6 @@ from morphomatics.geom import Surface
 from morphomatics.manifold import Sphere
 
 from train import update, evaluate, TrainingState
-from adni_classification_shape_space import batch_iterate
 
 ###########################################
 # Data
@@ -87,6 +86,16 @@ def iterate(data: List[Hippocampus]) -> Generator[jraph.GraphsTuple, None, None]
             globals=jnp.array([[hippo.mesh.volume / MAX_VOLUME, hippo.y]]),
             senders=jnp.asarray(W.row),
             receivers=jnp.asarray(W.col))
+
+
+def batch_iterate(data: List[Hippocampus], batch_size: int) -> Generator[jraph.GraphsTuple, None, None]:
+    return jraph.dynamically_batch(
+        iterate(data),
+        # Plus one for the extra padding node.
+        n_node=batch_size * MAX_NUM_NODES + 1,
+        # Times two because we want backwards edges.
+        n_edge=batch_size * MAX_NUM_EDGES * 2,
+        n_graph=batch_size + 1)
 
 
 ###########################################
