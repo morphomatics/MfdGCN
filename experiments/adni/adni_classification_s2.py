@@ -1,4 +1,5 @@
 from glob import glob
+import argparse
 from typing import NamedTuple, List, Generator
 import sys
 
@@ -23,6 +24,7 @@ from morphomatics.geom import Surface
 from morphomatics.manifold import Sphere
 
 from train import update, evaluate, TrainingState
+from adni_classification_shape_space import batch_iterate
 
 ###########################################
 # Data
@@ -87,20 +89,10 @@ def iterate(data: List[Hippocampus]) -> Generator[jraph.GraphsTuple, None, None]
             receivers=jnp.asarray(W.col))
 
 
-def batch_iterate(data: List[Hippocampus], batch_size: int) -> Generator[jraph.GraphsTuple, None, None]:
-    return jraph.dynamically_batch(
-        iterate(data),
-        # Plus one for the extra padding node.
-        n_node=batch_size * MAX_NUM_NODES + 1,
-        # Times two because we want backwards edges.
-        n_edge=batch_size * MAX_NUM_EDGES * 2,
-        n_graph=batch_size + 1)
-
-
 ###########################################
-# GCN Network
+# GCN
 ###########################################
-class GcnNet(nn.Module):
+class GCN(nn.Module):
     depth: int
     width: int
 
@@ -132,9 +124,9 @@ class GcnNet(nn.Module):
 
 
 ###########################################
-# Flow Network
+# Manifold GCN
 ###########################################
-class FlowNet(nn.Module):
+class MfdGCN(nn.Module):
     depth: int
     width: int
 
@@ -172,8 +164,8 @@ def training(hippocampi: List[Hippocampus],
              batch_size: int,
              n_epochs: int,
              seed: int,
-             verbosity: int = 0) -> jnp.ndarray:
-    """Train and trest procedure. Splits the ADNI data into training validation, and test sets. The validation set is
+             verbosity: int = 0) -> float:
+    """Train and trest procedure. Splits the ADNI data into training, validation, and test sets. The validation set is
     used to select the best model while avoiding overfitting the data. The performance of the selected model on the test
     data is returned.
 
@@ -232,16 +224,22 @@ def training(hippocampi: List[Hippocampus],
     return test_acc
 
 
-def main(case: str, seed: int):
-    batch_size = 1
+def main(case: str,
+         batch_size: int,
+         n_epochs: int,
+         seed: int):
+
+    # hyperparameters
     learning_rate = 1e-3
+    batch_size = 1
+    n_epochs = 300
 
     hippocampi = load_meshes()
 
     # use a comparable number of parameters
-    if case == "flow":
+    if case == "mfdgcn":
         # initialize network
-        network = FlowNet(4, 16)
+        network = MfdGCN(4, 16)
 
         transition_steps = len(hippocampi) // batch_size
         decay_rate = 0.95
@@ -250,7 +248,7 @@ def main(case: str, seed: int):
         schedule = optax.exponential_decay(learning_rate, transition_steps, decay_rate, transition_begin)
         optimizer = optax.adam(learning_rate=schedule)
     elif case == "gcn":
-        network = GcnNet(3, 16)
+        network = GCN(3, 16)
 
         optimizer = optax.adam(learning_rate=learning_rate)
 
@@ -258,7 +256,7 @@ def main(case: str, seed: int):
                    network=network,
                    optimizer=optimizer,
                    batch_size=batch_size,
-                   n_epochs=300,
+                   n_epochs=n_epochs,
                    seed=seed)
 
     return acc
@@ -267,11 +265,14 @@ def main(case: str, seed: int):
 if __name__ == '__main__':
     jax.config.update("jax_enable_x64", True)
 
-    case = sys.argv[1]
-    # case == "flow": use FlowNet
-    # case == "gcn": use GCNNet
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--network",
+                        type=str, help="whether to use Manifold GCN or a standard GCN, indicate by 'mfdgcn' or 'gcn' ",
+                        default="mfdgcn")
+    args = parser.parse_args()
+    case = args.network
 
-    net_str = "FlowNet" if case == "flow" else "GCNNet"
+    net_str = "MfdGCN" if case == "flow" else "GCN"
     print(f"\nRunning {net_str} on ADNI data using normals with 100 random seeds...")
     results = []
     for s in range(100):

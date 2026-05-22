@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import sys
 
 sys.path.insert(0, "../..")
@@ -225,17 +226,28 @@ def main(n_graphs: int,
 if __name__ == "__main__":
     jax.config.update("jax_enable_x64", True)
 
-    num_graphs = int(sys.argv[1])
-    space = sys.argv[2]  # "hyperbolic" or "spd"
-    initialization_type = sys.argv[3]  # "one_hot" or "degree"
-    n_repeats = int(sys.argv[4])
+    # Parse a few args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--graphs_per_class",
+                        type=int, help="how many graphs per class to use",
+                        default=30)
+    parser.add_argument("--feature_space",
+                        type=str, help="feature manifold from {hyperbolic, spd}",
+                        default="hyperbolic")
+    parser.add_argument("--initial_embedding",
+                        type=str,
+                        help="initial embedding from {one_hot, degree}",
+                        default="one_hot")
+    args = parser.parse_args()
+
+    num_graphs = args.graphs_per_class
+    assert num_graphs  > 0
+
+    space = args.feature_space
+    initialization = args.initial_embedding
 
     num_layers = 2
     num_channels = 16
-
-    assert num_graphs  > 0
-    assert space in ["hyperbolic", "spd"]
-    assert initialization_type in ["one_hot", "degree"]
 
     size_batches= 3
     num_val = int(num_graphs / 6)
@@ -244,8 +256,10 @@ if __name__ == "__main__":
 
     results = []
 
-    print(f"\nStart training on {3 * num_graphs} graphs.")
-    for s in range(n_repeats):
+    str_initialization = initialization.replace("_", "-")
+    print(f"\nStart training Manifold GCN on {3 * num_graphs} graphs in {space} space using "
+          f"{str_initialization} initialization.")
+    for s in range(100):
         results.append(
             main(n_graphs=num_graphs,
                  batch_size=size_batches,
@@ -253,7 +267,7 @@ if __name__ == "__main__":
                  n_test=num_test,
                  n_epochs=num_epochs,
                  feature_space=space,
-                 feature_initialization=initialization_type,
+                 feature_initialization=initialization,
                  n_layers=num_layers,
                  n_channels=num_channels,
                  seed=jax.random.key(s)))

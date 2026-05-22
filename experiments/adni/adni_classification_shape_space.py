@@ -61,8 +61,7 @@ def read_data():
         # edges of the dual mesh
         e = np.hstack(([np.arange(n), n_1[:, 0]],
                         [np.arange(n), n_1[:, 1]],
-                        [np.arange(n), n_1[:, 2]]
-                        ))
+                        [np.arange(n), n_1[:, 2]]))
 
         y = int(f.split('/')[-2] == 'AD')
 
@@ -107,7 +106,7 @@ def batch_iterate(data: List[Hippocampus], batch_size: int) -> Generator[jraph.G
 ###########################################
 # Network
 ###########################################
-class FlowNet(nn.Module):
+class MfdGCN(nn.Module):
     depth: int
     width: int
 
@@ -145,16 +144,24 @@ class FlowNet(nn.Module):
         return MLP((self.width, self.width // 2, NUM_CLASSES))(z)
 
 
-def main(batch_size: int,
-         n_epochs: int,
-         seed: int,
-         net: FlowNet,
-         optimizer: optax.GradientTransformation):
+def main(seed: int):
+
+    # hyperparameters
+    learning_rate = 1e-3
+    batch_size = 1
+    n_epochs = 150
+
+    # initialize network
+    network = MfdGCN(4, 16)
+
+    # initialize optimizer
+    optimizer = optax.adam(learning_rate)
+
     # create data
     hippocampi = read_data()
 
     key = jax.random.key(0)
-    params = net.init(key, next(batch_iterate(hippocampi, batch_size)))
+    params = network.init(key, next(batch_iterate(hippocampi, batch_size)))
     flat_para, _ = jax.flatten_util.ravel_pytree(params)
     print(f"Number of network parameters: {len(flat_para)}")
 
@@ -173,7 +180,10 @@ def main(batch_size: int,
     data_validation = None
 
     # evaluate accuracy function
-    eval_ = lambda p, g: evaluate(p, g, g.globals[:, 1], num_classes=NUM_CLASSES, network=net, mask=jnp.ones((1,)))
+    eval_ = lambda p, g: evaluate(p, g, g.globals[:, 1],
+                                  num_classes=NUM_CLASSES,
+                                  network=network,
+                                  mask=jnp.ones((1,)))
 
     opt_acc = 0.
     opt_param = state.params
@@ -184,7 +194,7 @@ def main(batch_size: int,
         for step, batch in enumerate(batch_iterate(data_train, batch_size)):
             mask = jraph.get_graph_padding_mask(batch)
 
-            state = update(state, batch, batch.globals[:, 1], optimizer, net, mask)
+            state = update(state, batch, batch.globals[:, 1], optimizer, network, mask)
 
         # evaluate accuracy
         train_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_train)])
@@ -192,7 +202,7 @@ def main(batch_size: int,
         validation_acc = train_acc
         _test_acc = np.mean([eval_(state.avg_params, g) for g in iterate(data_test)])
 
-        # update optimal parameters (only after epoch 25 to ignore randomly high validation accuracy early in the training)
+        # update optimal parameters (ignore randomly high validation accuracy early in the training)
         if validation_acc > opt_acc and i > 25:
             opt_param = state.avg_params
             # update optimal validation accuracy
@@ -206,19 +216,10 @@ def main(batch_size: int,
 if __name__ == '__main__':
     jax.config.update("jax_enable_x64", True)
 
-    learning_rate = 1e-3
-    batch_size = 1
-
-    # initialize network
-    network = FlowNet(4, 16)
-
-    # initialize optimizer
-    optim = optax.adam(learning_rate)
-
-    print(f"\nRunning FlowNet on ADNI data using shape-space features with 100 random seeds...")
+    print(f"\nRunning Manifold GCN on ADNI data using shape-space features with 100 random seeds...")
     results = []
     for s in range(100):
-        results.append(main(batch_size=batch_size, n_epochs=150, seed=s, net=network, optimizer=optim))
+        results.append(main(seed=s))
         print(f"\nSeed: {s}: {results[-1]:.3f}")
         print(f"Running average: {np.average(np.array(results)):.3f}")
 

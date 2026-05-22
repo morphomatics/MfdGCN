@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 import jax
 import jax.numpy as jnp
@@ -24,17 +24,17 @@ def lorentz_to_klein(x):
     return x[:-1] / x[-1]
 
 
-def klein_to_lorentz(k: jnp.array, M: HyperbolicSpace):
+def klein_to_lorentz(k: jnp.ndarray, M: HyperbolicSpace):
     x = jnp.array((*k, 1))
     x = x / jnp.sqrt(1 - k.T @ k)
     return M.project_to_manifold(x)
 
 
-def lorentz_to_poincare(x: jnp.array):
+def lorentz_to_poincare(x: jnp.ndarray):
     return x[:-1] / (x[-1] + 1)
 
 
-def poincare_to_lorentz(b: jnp.array, M: HyperbolicSpace):
+def poincare_to_lorentz(b: jnp.ndarray, M: HyperbolicSpace):
     x = jnp.array((*2*b, 1 + b.T @ b))
     x = x / (1 - b.T @ b)
     return M.project_to_manifold(x)
@@ -170,9 +170,15 @@ def main(graph_num: int,
 if __name__ == "__main__":
     jax.config.update("jax_enable_x64", True)
 
-    num_graphs = int(sys.argv[1])
-    hyperbolic_dimension = int(sys.argv[2])
-    n_repeats = int(sys.argv[3])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--graphs_per_class",
+                        type=int, help="how many graphs per class to use",
+                        default=30)
+    args = parser.parse_args()
+
+    num_graphs = args.graphs_per_class
+
+    hyperbolic_dimension = 100
 
     assert num_graphs  > 0
 
@@ -183,8 +189,8 @@ if __name__ == "__main__":
 
     results = []
 
-    print(f"\nStart training on {3 * num_graphs} graphs.")
-    for s in range(n_repeats):
+    print(f"\nStart training H2H-GCN on {3 * num_graphs} graphs.")
+    for s in range(100):
         results.append(main(graph_num=num_graphs,
                             dim=hyperbolic_dimension,
                             batch_size=size_batches,
