@@ -18,17 +18,35 @@ citing the paper:
 
 ```bibtex
 @article{Hanik2026mfdgcn,
-  author    = {Martin Hanik and Gabriele Steidl and Christoph von Tycowicz},
-  title     = {Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graph},
-  journal={International Journal of Computer Vision},
-  volume={134},
-  pages={x--y},
-  year={2026},
-  publisher={Springer}
+  author = {Martin Hanik and Gabriele Steidl and Christoph von Tycowicz},
+  title = {Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graph},
+  journal = {International Journal of Computer Vision},
+  volume = {134},
+  pages = {x--y},
+  year = {2026},
+  publisher = {Springer}
 }
 ```
 
 # Experiments
+
+To run experiments unsing Manifold GCN, you need to (pip-)install the following packages:
+- jax[cuda],
+- morphomatics==4.1.3,
+- flax,
+- optax,
+- jraph,
+- pyvista,
+- networkx,
+- sckit-learn.
+
+[Diffusion Net](https://github.com/nmwsharp/diffusion-net) and [Mesh CNN](https://github.com/ranahanocka/MeshCNN/) are 
+not included in these requirements. They must be installed separately and require additional dependencies. We refer to the 
+respective repositories for installation instructions. Depending on your setup, there might be problems to install 
+Jax and Pytorch for GPU at the same time. In that case, we recommend to use different virtual environments when training
+Jax- and Pytorch-based models.
+
+This code was tested with Python 3.11 and CUDA 12.1.
 
 ## Synthetic Graph Classification
 
@@ -64,7 +82,9 @@ commands to run the experiment with normals and differential-coordinate features
 
 ```
 python adni_classification_s2.py
+```
 
+```
 python adni_classification_shape_space.py
 ```
 

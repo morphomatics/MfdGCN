@@ -1,5 +1,5 @@
 # environment.yml
-name: MfdGCN_env
+name: mfd_env
 channels:
   - conda-forge
 dependencies:
@@ -15,8 +15,3 @@ dependencies:
     - pyvista
     - networkx
     - sckit-learn
-    - diffusion_net
-    - torch
-    - tqdm
-    - potpourri3d
-    - robust_laplacian
