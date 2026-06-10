@@ -6,7 +6,7 @@ It is well-suited for tasks like segmentation, classification, feature extractio
 > Martin Hanik, Gabriele Steidl, Christoph von Tycowicz:  
 > **[Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graphs.]()**  
 > International Journal of Computer Vision, Volume 134, 2026. </br>
-> [![DOI](https://img.shields.io/badge/DOI-xxx-yellow)](http://dx.doi.org/10.1137/21M1410373) [![Preprint](https://img.shields.io/badge/arXiv-2402.12901-red)](https://arxiv.org/abs/2401.14381)
+> [![DOI](https://img.shields.io/badge/DOI-10.1007%2Fs11263--026--02899--9-yellow)](https://doi.org/10.1007/s11263-026-02899-9) 
 
 The network layers can be found in the [Morphomatics](https://morphomatics.github.io/) library. This repository contains 
 the code for the experiments in the paper.
@@ -22,7 +22,7 @@ citing the paper:
   title     = {Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graph},
   journal={International Journal of Computer Vision},
   volume={134},
-  pages={x--y},
+  pages={315},
   year={2026},
   publisher={Springer}
 }
@@ -57,6 +57,11 @@ For HGNN, we refer to the [repository](https://github.com/facebookresearch/hgnn)
 
 ## Alzheimer Classification from Hippocampi
 
+ADNI does not allow us to share the data we derived from their scans, i.e., the triangular meshes of the hippocampi. 
+To be able to run the experiments, you must therefore download the scans and segmentations from their website and create 
+the meshes as discribe in the paper. This repository contains the code for the experiments in the paper. Once you have 
+the data, you can apply these. In the following, we describe how this is done.
+
 ### Manifold GCN
 
 To run our Manifold GCN for Alzheimer classification, navigate to the `experiments/adni` folder. Use the following 
@@ -70,8 +75,9 @@ python adni_classification_shape_space.py
 
 ### Comparison methods
 
-To use Diffusion Net, first clone the [repository](https://github.com/nmwsharp/diffusion-net) to the location of your
-choice and add the path to the source (usually `diffusion-net/src`) folder to the `PYTHONPATH` environment variable. 
+To use Diffusion Net, clone the [repository](https://github.com/nmwsharp/diffusion-net) to the location of your
+choice, install all packages the package requires, and add the path to the source (usually `diffusion-net/src`) folder 
+to the `PYTHONPATH` environment variable.
 When the repository was cloned into the `adni` folder, the following command can be used to run Diffusion Net with 
 xyz-coordinate features:
 

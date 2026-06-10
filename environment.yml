@@ -7,7 +7,7 @@ dependencies:
   - pip
   - pip:
     - "jax[cuda12]"
-    - morphomatics==4.1.2
+    - morphomatics
     - numpy
     - flax
     - optax
@@ -15,8 +15,3 @@ dependencies:
     - pyvista
     - networkx
     - sckit-learn
-    - diffusion_net
-    - torch
-    - tqdm
-    - potpourri3d
-    - robust_laplacian
