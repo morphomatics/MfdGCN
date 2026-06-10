@@ -18,8 +18,8 @@ citing the paper:
 
 ```bibtex
 @article{Hanik2026mfdgcn,
-  author    = {Martin Hanik and Gabriele Steidl and Christoph von Tycowicz},
-  title     = {Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graph},
+  author={Martin Hanik and Gabriele Steidl and Christoph von Tycowicz},
+  title={Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graph},
   journal={International Journal of Computer Vision},
   volume={134},
   pages={315},
@@ -29,6 +29,22 @@ citing the paper:
 ```
 
 # Experiments
+
+To run experiments unsing Manifold GCN, you need to (pip-)install the following packages:
+- jax[cuda],
+- morphomatics,
+- flax,
+- optax,
+- jraph,
+- pyvista,
+- networkx,
+- sckit-learn.
+
+[Diffusion Net](https://github.com/nmwsharp/diffusion-net) and [Mesh CNN](https://github.com/ranahanocka/MeshCNN/) are 
+not included in these requirements. They must be installed separately and require additional dependencies. We refer to the 
+respective repositories for installation instructions. 
+
+This code was tested with Python 3.11 and CUDA 12.1.
 
 ## Synthetic Graph Classification
 
@@ -59,8 +75,8 @@ For HGNN, we refer to the [repository](https://github.com/facebookresearch/hgnn)
 
 ADNI does not allow us to share the data we derived from their scans, i.e., the triangular meshes of the hippocampi. 
 To be able to run the experiments, you must therefore download the scans and segmentations from their website and create 
-the meshes as discribe in the paper. This repository contains the code for the experiments in the paper. Once you have 
-the data, you can apply these. In the following, we describe how this is done.
+the meshes as discribe in the paper. Please contact us if you have questions. This repository contains the code for 
+the experiments in the paper. Once you have the data, you can apply these. In the following, we describe how this is done.
 
 ### Manifold GCN
 
@@ -69,7 +85,9 @@ commands to run the experiment with normals and differential-coordinate features
 
 ```
 python adni_classification_s2.py
+```
 
+```
 python adni_classification_shape_space.py
 ```
 

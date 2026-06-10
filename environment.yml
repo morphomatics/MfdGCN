@@ -1,5 +1,5 @@
 # environment.yml
-name: MfdGCN_env
+name: mfd_env
 channels:
   - conda-forge
 dependencies:
