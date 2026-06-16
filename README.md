@@ -5,7 +5,7 @@ It is well-suited for tasks like segmentation, classification, feature extractio
 
 > Martin Hanik, Gabriele Steidl, Christoph von Tycowicz:  
 > **[Manifold GCN: Diffusion-based Convolutional Neural Network for Manifold-valued Graphs.]()**  
-> International Journal of Computer Vision, Volume 134, 2026. </br>
+> International Journal of Computer Vision, Volume 134, article number 315 (2026). </br>
 > [![DOI](https://img.shields.io/badge/DOI-10.1007%2Fs11263--026--02899--9-yellow)](https://doi.org/10.1007/s11263-026-02899-9) 
 
 The network layers can be found in the [Morphomatics](https://morphomatics.github.io/) library. This repository contains 
@@ -38,7 +38,8 @@ To run experiments unsing Manifold GCN, you need to (pip-)install the following 
 - jraph,
 - pyvista,
 - networkx,
-- sckit-learn.
+- sckit-learn,
+- pyvista.
 
 [Diffusion Net](https://github.com/nmwsharp/diffusion-net) and [Mesh CNN](https://github.com/ranahanocka/MeshCNN/) are 
 not included in these requirements. They must be installed separately and require additional dependencies. We refer to the 

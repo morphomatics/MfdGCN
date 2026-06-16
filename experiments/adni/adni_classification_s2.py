@@ -23,7 +23,7 @@ from morphomatics.graph.operators import max_pooling, mean_pooling
 from morphomatics.geom import Surface
 from morphomatics.manifold import Sphere
 
-from train import update, evaluate, TrainingState
+from experiments.train import update, evaluate, TrainingState
 
 ###########################################
 # Data
@@ -280,7 +280,7 @@ if __name__ == '__main__':
     case = args.network
 
     net_str = "MfdGCN" if case == "flow" else "GCN"
-    print(f"\nRunning {net_str} on ADNI data using normals with 100 random seeds...")
+    print(f"\nRunning {net_str} on ADNI data using normals with 100 random seeds.")
     results = []
     for s in range(100):
         results.append(main(case, s))

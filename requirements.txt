@@ -1,0 +1,9 @@
+jax[cuda12]
+morphomatics
+numpy
+flax
+optax
+jraph
+networkx
+scikit-learn
+pyvista

@@ -21,7 +21,7 @@ from morphomatics.nn.euclidean_layers import MLP
 from morphomatics.geom import Surface
 from morphomatics.manifold import SO3, SPD
 
-from train import update, evaluate, TrainingState
+from experiments.train import update, evaluate, TrainingState
 from glob import glob
 import os.path as osp
 import pyvista as pv
@@ -216,7 +216,7 @@ def main(seed: int):
 if __name__ == '__main__':
     jax.config.update("jax_enable_x64", True)
 
-    print(f"\nRunning Manifold GCN on ADNI data using shape-space features with 100 random seeds...")
+    print(f"\nRunning Manifold GCN on ADNI data using shape-space features with 100 random seeds.")
     results = []
     for s in range(100):
         results.append(main(seed=s))

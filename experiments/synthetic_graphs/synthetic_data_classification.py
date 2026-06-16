@@ -22,8 +22,8 @@ from morphomatics.nn.euclidean_layers import MLP
 from morphomatics.graph.operators import max_pooling, mean_pooling
 
 from data.synthetic_graphs.generate_graphs_morphomatics import generate_graphs
-from util import spd_one_hot
-from train import update, evaluate_f1, TrainingState
+from experiments.util import spd_one_hot
+from experiments.train import update, evaluate_f1, TrainingState
 
 NUM_CLASSES = 3
 NUM_NODES = 100

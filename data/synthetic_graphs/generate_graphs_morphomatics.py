@@ -10,7 +10,7 @@ import numpy as np
 import pickle
 
 
-from util import convert_networkx_to_jraph_graph
+from experiments.util import convert_networkx_to_jraph_graph
 
 
 def pickle_dump(file_name, content):
