@@ -94,6 +94,8 @@ python adni_classification_shape_space.py
 
 ### Comparison methods
 
+#### Diffusion Net
+
 To use Diffusion Net, clone the [repository](https://github.com/nmwsharp/diffusion-net) to the location of your
 choice, install all packages the package requires, and add the path to the source (usually `diffusion-net/src`) folder 
 to the `PYTHONPATH` environment variable.
@@ -107,3 +109,13 @@ PYTHONPATH=./diffusion-net/src python adni_classification_diffusion_net.py --fea
 Using `hks`, `normal`, or `dcm`, the network receives heat kernel signatures, normals, or differential-coordinate 
 features, respectively.
 
+#### Mesh CNN
+
+Use the `get_meshcnn.sh` script to download the Mesh CNN repository with necessary adjustments and install all required 
+packages.
+
+You can then run the Mesh CNN with the following command with the Mesh CNN repository as the root source:
+
+```
+python adni_classification_mesh_cnn.py
+```

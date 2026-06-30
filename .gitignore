@@ -1,0 +1,34 @@
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- Python Cache & Compilates ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Test- & Coverage-Reports ---
+.coverage
+htmlcov/
+*.lprof
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Operating System Data ---
+.DS_Store
+Thumbs.db
+
+# --- Data ---
+.obj
+.npz
+data/adni/
